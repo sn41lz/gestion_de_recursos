@@ -16,7 +16,7 @@
 ---
 
 ## 🗂️ Estructura del Repositorio
-
+```text
 gestion_de_recursos/
 ├── api/ # Código del API backend
 ├── uploads/ # Archivos subidos por los usuarios
