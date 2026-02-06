@@ -27,7 +27,7 @@ gestion_de_recursos/
 ├── .gitignore # Archivos ignorados por Git
 ├── .gitattributes # Configuraciones de Git
 ├── favicon.svg # Icono de la app
-
+```
 
 ---
 
