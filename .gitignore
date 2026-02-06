@@ -1,0 +1,40 @@
+# SGR-IT - Git Ignore
+# ====================
+
+# Claves API privadas
+api/api_keys.php
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+*.log
+error_log
+
+# Archivos temporales
+*.tmp
+*.temp
+*.swp
+*~
+
+# PHP
+vendor/
+composer.lock
+
+# Node (si se usa en el futuro)
+node_modules/
+package-lock.json
+
+# Archivos de configuración local
+*.local.php
+*.local.json
+.env
+.env.local

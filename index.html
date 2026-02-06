@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGR-IT | Sistema de Gestión de Recursos IT</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="styles.css?v=2">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="animated-bg">
+        <div class="gradient-sphere sphere-1"></div>
+        <div class="gradient-sphere sphere-2"></div>
+        <div class="gradient-sphere sphere-3"></div>
+        <div class="grid-overlay"></div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal active">
+        <div class="modal-content login-modal">
+            <div class="login-header">
+                <div class="logo-container">
+                    <div class="logo-icon">
+                        <i class="fas fa-server"></i>
+                    </div>
+                    <h1>SGR-IT</h1>
+                    <p>Sistema de Gestión de Recursos IT</p>
+                </div>
+            </div>
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="loginEmail"><i class="fas fa-envelope"></i> Email</label>
+                    <input type="email" id="loginEmail" placeholder="tu.email@empresa.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword"><i class="fas fa-lock"></i> Contraseña</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-glow">
+                    <span>Iniciar Sesión</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </form>
+            <div class="login-footer">
+                <p>Credenciales de prueba: <code>carlos.mendoza@empresa.com</code> / <code>Cursos1</code></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="app" class="app-container hidden">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-server"></i>
+                    <span>SGR-IT</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="nav-item active" data-section="dashboard">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Dashboard</span>
+                        <div class="nav-indicator"></div>
+                    </li>
+                    <li class="nav-item" data-section="recursos">
+                        <i class="fas fa-laptop"></i>
+                        <span>Recursos</span>
+                    </li>
+                    <li class="nav-item" data-section="reservas">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Reservas</span>
+                    </li>
+                    <li class="nav-item" data-section="calendario">
+                        <i class="fas fa-calendar-week"></i>
+                        <span>Calendario</span>
+                    </li>
+                    <li class="nav-item" data-section="mapa">
+                        <i class="fas fa-building"></i>
+                        <span>Mapa Edificio</span>
+                    </li>
+                    <li class="nav-item admin-only" data-section="usuarios">
+                        <i class="fas fa-users-cog"></i>
+                        <span>Usuarios</span>
+                    </li>
+                    <li class="nav-item admin-only" data-section="reportes">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Reportes</span>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-details">
+                        <span id="userName">Usuario</span>
+                        <span id="userRole" class="role-badge">Rol</span>
+                    </div>
+                </div>
+                <button id="myProfileBtn" class="btn-profile user-only" onclick="openMyProfile()" title="Mi Perfil">
+                    <i class="fas fa-cog"></i>
+                </button>
+                <button id="logoutBtn" class="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="main-header">
+                <div class="header-left">
+                    <button id="sidebarToggle" class="sidebar-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="breadcrumb">
+                        <span id="currentSection">Dashboard</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="globalSearch" placeholder="Buscar recursos..." autocomplete="off">
+                        <div id="searchResults" class="search-results"></div>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn-icon" id="notificationsBtn">
+                            <i class="fas fa-bell"></i>
+                            <span class="notification-badge">3</span>
+                        </button>
+                        <button class="btn-icon" id="themeToggle">
+                            <i class="fas fa-moon"></i>
+                        </button>
+                        <div class="live-clock">
+                            <i class="fas fa-clock"></i>
+                            <span id="liveClock">00:00:00</span>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Sections -->
+            <div class="content-wrapper">
+                <!-- Dashboard Section -->
+                <section id="dashboardSection" class="content-section active">
+                    <!-- Stats Cards -->
+                    <div class="stats-grid">
+                        <div class="stat-card stat-primary">
+                            <div class="stat-icon">
+                                <i class="fas fa-laptop"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="totalRecursos">0</span>
+                                <span class="stat-label">Total Recursos</span>
+                            </div>
+                            <div class="stat-trend" id="trendRecursos">
+                                <span>--</span>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-success">
+                            <div class="stat-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="recursosDisponibles">0</span>
+                                <span class="stat-label">Disponibles</span>
+                            </div>
+                            <div class="stat-trend" id="trendDisponibles">
+                                <span>--</span>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-warning">
+                            <div class="stat-icon">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="reservasActivas">0</span>
+                                <span class="stat-label">Reservas Activas</span>
+                            </div>
+                            <div class="stat-trend" id="trendReservas">
+                                <span>--</span>
+                            </div>
+                        </div>
+                        <div class="stat-card stat-danger">
+                            <div class="stat-icon">
+                                <i class="fas fa-tools"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="recursosNoDisponibles">0</span>
+                                <span class="stat-label">En Mantenimiento</span>
+                            </div>
+                            <div class="stat-trend" id="trendMantenimiento">
+                                <span>--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row -->
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3><i class="fas fa-chart-pie"></i> Recursos por Tipo</h3>
+                                <div class="chart-actions">
+                                    <button class="btn-chart-action" onclick="toggleChartType('pie', this)" title="Gráfico Pie">
+                                        <i class="fas fa-chart-pie"></i>
+                                    </button>
+                                    <button class="btn-chart-action active" onclick="toggleChartType('doughnut', this)" title="Gráfico Doughnut">
+                                        <i class="fas fa-circle-notch"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="chart-body">
+                                <canvas id="tiposRecursoChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3><i class="fas fa-chart-bar"></i> Estado de Reservas</h3>
+                            </div>
+                            <div class="chart-body">
+                                <canvas id="estadosReservaChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3><i class="fas fa-chart-area"></i> Actividad Semanal</h3>
+                            </div>
+                            <div class="chart-body">
+                                <canvas id="actividadSemanalChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User Personal Stats (solo usuarios normales) -->
+                    <div class="user-stats-card user-only">
+                        <div class="user-stats-header">
+                            <h3><i class="fas fa-user-circle"></i> Mi Actividad</h3>
+                        </div>
+                        <div class="user-stats-grid">
+                            <div class="user-stat">
+                                <div class="user-stat-icon">
+                                    <i class="fas fa-calendar-check"></i>
+                                </div>
+                                <div class="user-stat-info">
+                                    <span class="user-stat-value" id="misReservasActivas">0</span>
+                                    <span class="user-stat-label">Mis Reservas Activas</span>
+                                </div>
+                            </div>
+                            <div class="user-stat">
+                                <div class="user-stat-icon success">
+                                    <i class="fas fa-history"></i>
+                                </div>
+                                <div class="user-stat-info">
+                                    <span class="user-stat-value" id="misReservasTotal">0</span>
+                                    <span class="user-stat-label">Total Históricas</span>
+                                </div>
+                            </div>
+                            <div class="user-stat">
+                                <div class="user-stat-icon warning">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="user-stat-info">
+                                    <span class="user-stat-value" id="misReservasPendientes">0</span>
+                                    <span class="user-stat-label">Pendientes de Aprobación</span>
+                                </div>
+                            </div>
+                            <div class="user-stat">
+                                <div class="user-stat-icon info">
+                                    <i class="fas fa-laptop"></i>
+                                </div>
+                                <div class="user-stat-info">
+                                    <span class="user-stat-value" id="recursosReservados">0</span>
+                                    <span class="user-stat-label">Recursos Usando Ahora</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SIEM Dashboard Row (solo admin) -->
+                    <div class="siem-grid admin-only">
+                        <div class="siem-card">
+                            <div class="siem-header">
+                                <h3><i class="fas fa-shield-alt"></i> Monitor de Sistema</h3>
+                                <span class="siem-status online" id="systemStatus"><i class="fas fa-circle"></i> EN LÍNEA</span>
+                            </div>
+                            <div class="siem-body">
+                                <div class="siem-metric">
+                                    <span class="metric-label">CPU</span>
+                                    <div class="metric-bar">
+                                        <div class="metric-fill" id="cpuBar" style="width: 0%"></div>
+                                    </div>
+                                    <span class="metric-value" id="cpuValue">--%</span>
+                                </div>
+                                <div class="siem-metric">
+                                    <span class="metric-label">RAM</span>
+                                    <div class="metric-bar">
+                                        <div class="metric-fill" id="ramBar" style="width: 0%"></div>
+                                    </div>
+                                    <span class="metric-value" id="ramValue">--%</span>
+                                </div>
+                                <div class="siem-metric">
+                                    <span class="metric-label">DISCO</span>
+                                    <div class="metric-bar">
+                                        <div class="metric-fill" id="diskBar" style="width: 0%"></div>
+                                    </div>
+                                    <span class="metric-value" id="diskValue">--%</span>
+                                </div>
+                                <div class="siem-metric">
+                                    <span class="metric-label">RED</span>
+                                    <div class="metric-bar">
+                                        <div class="metric-fill" id="networkBar" style="width: 0%"></div>
+                                    </div>
+                                    <span class="metric-value" id="networkValue">--%</span>
+                                </div>
+                                <div class="siem-uptime">
+                                    <i class="fas fa-clock"></i> Uptime: <span id="uptimeValue">--</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="siem-card activity-feed">
+                            <div class="siem-header">
+                                <h3><i class="fas fa-stream"></i> Actividad Reciente</h3>
+                                <button class="btn-refresh" id="refreshActivity">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                            </div>
+                            <div class="siem-body">
+                                <ul class="activity-list" id="activityList">
+                                    <!-- Populated by JS -->
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="siem-card quick-actions">
+                            <div class="siem-header">
+                                <h3><i class="fas fa-bolt"></i> Acciones Rápidas</h3>
+                            </div>
+                            <div class="siem-body">
+                                <button class="quick-action-btn" onclick="openNewReservaModal()">
+                                    <i class="fas fa-plus-circle"></i>
+                                    <span>Nueva Reserva</span>
+                                </button>
+                                <button class="quick-action-btn" onclick="showSection('recursos')">
+                                    <i class="fas fa-search"></i>
+                                    <span>Buscar Recurso</span>
+                                </button>
+                                <button class="quick-action-btn" onclick="showSection('mapa')">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>Ver Mapa</span>
+                                </button>
+                                <button class="quick-action-btn admin-only" onclick="generateAISummary()">
+                                    <i class="fas fa-robot"></i>
+                                    <span>Resumen AI</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Admin Quick Panel -->
+                    <div class="admin-panel admin-only">
+                        <div class="admin-panel-header">
+                            <h3><i class="fas fa-shield-alt"></i> Panel de Administración</h3>
+                        </div>
+                        <div class="admin-actions-grid">
+                            <button class="admin-action-btn" onclick="openNewUsuarioModal()">
+                                <i class="fas fa-user-plus"></i>
+                                <span>Añadir Usuario</span>
+                            </button>
+                            <button class="admin-action-btn" onclick="openNewRecursoModal()">
+                                <i class="fas fa-plus-circle"></i>
+                                <span>Añadir Recurso</span>
+                            </button>
+                            <button class="admin-action-btn" onclick="showPendingReservas()">
+                                <i class="fas fa-clock"></i>
+                                <span>Reservas Pendientes</span>
+                                <span class="admin-badge" id="pendingCount">0</span>
+                            </button>
+                            <button class="admin-action-btn" onclick="showSection('reportes')">
+                                <i class="fas fa-chart-line"></i>
+                                <span>Ver Reportes</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Upcoming Reservations -->
+                    <div class="table-card">
+                        <div class="table-header">
+                            <h3><i class="fas fa-calendar-alt"></i> <span id="reservasTableTitle">Próximas Reservas</span></h3>
+                            <div class="toggle-group user-only">
+                                <button class="toggle-btn active" onclick="toggleMisReservas(false)" id="btnTodasReservas">Todas</button>
+                                <button class="toggle-btn" onclick="toggleMisReservas(true)" id="btnMisReservas">Mis Reservas</button>
+                            </div>
+                            <div class="table-actions">
+                                <button class="btn btn-sm btn-outline" onclick="openNewReservaModal()">
+                                    <i class="fas fa-plus"></i> Nueva Reserva
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Recurso</th>
+                                        <th>Usuario</th>
+                                        <th>Inicio</th>
+                                        <th>Fin</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="proximasReservasTable">
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Recursos Section -->
+                <section id="recursosSection" class="content-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-laptop"></i> Gestión de Recursos</h2>
+                        <div class="section-actions">
+                            <div class="filter-group">
+                                <select id="filterTipoRecurso" class="form-select">
+                                    <option value="">Todos los tipos</option>
+                                </select>
+                                <select id="filterEstadoRecurso" class="form-select">
+                                    <option value="">Todos los estados</option>
+                                    <option value="disponible">Disponible</option>
+                                    <option value="no_disponible">No Disponible</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary admin-only" onclick="openNewRecursoModal()">
+                                <i class="fas fa-plus"></i> Nuevo Recurso
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="recursos-grid" id="recursosGrid">
+                        <!-- Populated by JS -->
+                    </div>
+                </section>
+
+                <!-- Reservas Section -->
+                <section id="reservasSection" class="content-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-calendar-alt"></i> Gestión de Reservas</h2>
+                        <div class="section-actions">
+                            <div class="filter-group">
+                                <select id="filterEstadoReserva" class="form-select">
+                                    <option value="">Todos los estados</option>
+                                </select>
+                                <input type="date" id="filterFechaReserva" class="form-input">
+                            </div>
+                            <button class="btn btn-primary" onclick="openNewReservaModal()">
+                                <i class="fas fa-plus"></i> Nueva Reserva
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="reservas-timeline" id="reservasTimeline">
+                        <!-- Populated by JS -->
+                    </div>
+                </section>
+
+                <!-- Calendario Section -->
+                <section id="calendarioSection" class="content-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-calendar-week"></i> Calendario de Reservas</h2>
+                        <div class="section-actions">
+                            <div class="calendar-nav">
+                                <button class="btn btn-icon" onclick="navigateCalendar(-1)" title="Semana anterior">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <button class="btn btn-outline" onclick="goToToday()">Hoy</button>
+                                <button class="btn btn-icon" onclick="navigateCalendar(1)" title="Semana siguiente">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                                <span id="calendarWeekLabel" class="calendar-week-label">Semana</span>
+                            </div>
+                            <div class="filter-group">
+                                <select id="filterCalendarTipo" class="form-select" onchange="renderWeekCalendar()">
+                                    <option value="">Todos los recursos</option>
+                                    <!-- Populated by JS -->
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="calendar-legend">
+                        <span class="legend-item"><span class="legend-dot confirmada"></span> Confirmada</span>
+                        <span class="legend-item"><span class="legend-dot pendiente"></span> Pendiente</span>
+                        <span class="legend-item"><span class="legend-dot cancelada"></span> Cancelada</span>
+                    </div>
+
+                    <div class="week-calendar-container">
+                        <div class="week-calendar" id="weekCalendar">
+                            <!-- Hours column -->
+                            <div class="calendar-hours">
+                                <div class="calendar-header-cell"></div>
+                                <!-- Hour labels populated by JS -->
+                            </div>
+                            <!-- Days columns populated by JS -->
+                        </div>
+                    </div>
+                </section>
+                <section id="mapaSection" class="content-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-building"></i> Mapa del Edificio</h2>
+                        <div class="section-actions">
+                            <div class="legend">
+                                <span class="legend-item"><i class="fas fa-circle text-success"></i> Disponible</span>
+                                <span class="legend-item"><i class="fas fa-circle text-warning"></i> En Uso</span>
+                                <span class="legend-item"><i class="fas fa-circle text-danger"></i> No Disponible</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="building-map">
+                        <!-- Planta 3 -->
+                        <div class="floor-container" data-floor="3">
+                            <div class="floor-header">
+                                <span class="floor-number">PLANTA 3</span>
+                                <span class="floor-name">Formación</span>
+                            </div>
+                            <div class="floor-layout">
+                                <div class="room sala" data-room="sala-formacion">
+                                    <div class="room-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+                                    <div class="room-name">Sala Formación</div>
+                                    <div class="room-resources" id="resources-sala-formacion"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Planta 2 -->
+                        <div class="floor-container" data-floor="2">
+                            <div class="floor-header">
+                                <span class="floor-number">PLANTA 2</span>
+                                <span class="floor-name">Oficinas</span>
+                            </div>
+                            <div class="floor-layout office-row">
+                                <div class="room office" data-room="oficina-1">
+                                    <div class="room-icon"><i class="fas fa-user-tie"></i></div>
+                                    <div class="room-name">Oficina 1</div>
+                                    <div class="room-resources" id="resources-oficina-1"></div>
+                                </div>
+                                <div class="room office" data-room="oficina-2">
+                                    <div class="room-icon"><i class="fas fa-user-tie"></i></div>
+                                    <div class="room-name">Oficina 2</div>
+                                    <div class="room-resources" id="resources-oficina-2"></div>
+                                </div>
+                                <div class="room office" data-room="oficina-3">
+                                    <div class="room-icon"><i class="fas fa-user-tie"></i></div>
+                                    <div class="room-name">Oficina 3</div>
+                                    <div class="room-resources" id="resources-oficina-3"></div>
+                                </div>
+                                <div class="room office" data-room="oficina-4">
+                                    <div class="room-icon"><i class="fas fa-user-tie"></i></div>
+                                    <div class="room-name">Oficina 4</div>
+                                    <div class="room-resources" id="resources-oficina-4"></div>
+                                </div>
+                                <div class="room office" data-room="oficina-5">
+                                    <div class="room-icon"><i class="fas fa-user-tie"></i></div>
+                                    <div class="room-name">Oficina 5</div>
+                                    <div class="room-resources" id="resources-oficina-5"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Planta 1 -->
+                        <div class="floor-container" data-floor="1">
+                            <div class="floor-header">
+                                <span class="floor-number">PLANTA 1</span>
+                                <span class="floor-name">Salas de Reuniones</span>
+                            </div>
+                            <div class="floor-layout">
+                                <div class="room sala large" data-room="sala-juntas">
+                                    <div class="room-icon"><i class="fas fa-users"></i></div>
+                                    <div class="room-name">Sala Juntas Principal</div>
+                                    <div class="room-resources" id="resources-sala-juntas"></div>
+                                </div>
+                                <div class="room sala" data-room="sala-reuniones">
+                                    <div class="room-icon"><i class="fas fa-comments"></i></div>
+                                    <div class="room-name">Sala Reuniones Pequeña</div>
+                                    <div class="room-resources" id="resources-sala-reuniones"></div>
+                                </div>
+                                <div class="room sala" data-room="sala-video">
+                                    <div class="room-icon"><i class="fas fa-video"></i></div>
+                                    <div class="room-name">Sala Videoconferencia</div>
+                                    <div class="room-resources" id="resources-sala-video"></div>
+                                </div>
+                                <div class="room office ceo" data-room="oficina-ceo">
+                                    <div class="room-icon"><i class="fas fa-crown"></i></div>
+                                    <div class="room-name">Oficina CEO</div>
+                                    <div class="room-resources" id="resources-oficina-ceo"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Planta Baja -->
+                        <div class="floor-container" data-floor="0">
+                            <div class="floor-header">
+                                <span class="floor-number">PLANTA BAJA</span>
+                                <span class="floor-name">IT & Almacén</span>
+                            </div>
+                            <div class="floor-layout">
+                                <div class="room almacen large" data-room="almacen-it">
+                                    <div class="room-icon"><i class="fas fa-warehouse"></i></div>
+                                    <div class="room-name">Almacén IT</div>
+                                    <div class="room-resources" id="resources-almacen-it"></div>
+                                </div>
+                                <div class="room taller" data-room="taller-it">
+                                    <div class="room-icon"><i class="fas fa-tools"></i></div>
+                                    <div class="room-name">Taller IT</div>
+                                    <div class="room-resources" id="resources-taller-it"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Usuarios Section (Admin) -->
+                <section id="usuariosSection" class="content-section admin-only">
+                    <div class="section-header">
+                        <h2><i class="fas fa-users-cog"></i> Gestión de Usuarios</h2>
+                        <div class="section-actions">
+                            <button class="btn btn-primary" onclick="openNewUsuarioModal()">
+                                <i class="fas fa-user-plus"></i> Nuevo Usuario
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-card">
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nombre</th>
+                                        <th>Email</th>
+                                        <th>Rol</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usuariosTable">
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Reportes Section (Admin) -->
+                <section id="reportesSection" class="content-section admin-only">
+                    <div class="section-header">
+                        <h2><i class="fas fa-file-alt"></i> Reportes y Estadísticas</h2>
+                    </div>
+
+                    <div class="reports-grid">
+                        <div class="report-card">
+                            <div class="report-header">
+                                <h3><i class="fas fa-chart-line"></i> Uso de Recursos</h3>
+                            </div>
+                            <div class="report-body">
+                                <canvas id="usoRecursosChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="report-card">
+                            <div class="report-header">
+                                <h3><i class="fas fa-users"></i> Actividad por Usuario</h3>
+                            </div>
+                            <div class="report-body">
+                                <canvas id="actividadUsuariosChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="report-card full-width">
+                            <div class="report-header">
+                                <h3><i class="fas fa-calendar"></i> Histórico de Reservas</h3>
+                                <div class="report-actions">
+                                    <button class="btn btn-sm btn-outline" onclick="exportCSV()">
+                                        <i class="fas fa-file-csv"></i> Exportar CSV
+                                    </button>
+                                    <button class="btn btn-sm btn-outline" onclick="exportPDF()">
+                                        <i class="fas fa-file-pdf"></i> Exportar PDF
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="report-body">
+                                <canvas id="historicoReservasChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- New Reserva Modal -->
+    <div id="reservaModal" class="modal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h2><i class="fas fa-calendar-plus"></i> <span id="reservaModalTitle">Nueva Reserva</span></h2>
+                <button class="modal-close" onclick="closeModal('reservaModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="reservaForm" class="modal-form">
+                <input type="hidden" id="reservaId">
+                <div class="reserva-layout">
+                    <div class="reserva-form-section">
+                        <div class="form-group">
+                            <label for="reservaRecurso"><i class="fas fa-laptop"></i> Recurso</label>
+                            <select id="reservaRecurso" required onchange="onRecursoChange()">
+                                <option value="">Selecciona un recurso...</option>
+                                <!-- Populated by JS -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="reservaFecha"><i class="fas fa-calendar"></i> Fecha</label>
+                            <input type="date" id="reservaFecha" required onchange="loadDaySchedule()">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="reservaHoraInicio"><i class="fas fa-clock"></i> Hora Inicio</label>
+                                <select id="reservaHoraInicio" required onchange="checkReservaAvailability()">
+                                    <!-- Populated by JS -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="reservaHoraFin"><i class="fas fa-clock"></i> Hora Fin</label>
+                                <select id="reservaHoraFin" required onchange="checkReservaAvailability()">
+                                    <!-- Populated by JS -->
+                                </select>
+                            </div>
+                        </div>
+                        <!-- Hidden fields for datetime-local compatibility -->
+                        <input type="hidden" id="reservaInicio">
+                        <input type="hidden" id="reservaFin">
+                        
+                        <!-- Indicador de disponibilidad en tiempo real -->
+                        <div id="availabilityIndicator" class="availability-indicator hidden">
+                            <div class="availability-checking">
+                                <i class="fas fa-spinner fa-spin"></i> Verificando disponibilidad...
+                            </div>
+                            <div class="availability-available hidden">
+                                <i class="fas fa-check-circle"></i> Recurso disponible en este horario
+                            </div>
+                            <div class="availability-conflict hidden">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span class="conflict-message">Conflicto detectado</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Calendario visual de disponibilidad -->
+                    <div class="schedule-section">
+                        <div class="schedule-header">
+                            <h4><i class="fas fa-clock"></i> Disponibilidad del día</h4>
+                            <div class="schedule-legend">
+                                <span class="legend-item"><span class="legend-color available"></span> Libre</span>
+                                <span class="legend-item"><span class="legend-color pending"></span> Pendiente</span>
+                                <span class="legend-item"><span class="legend-color confirmed"></span> Confirmada</span>
+                            </div>
+                        </div>
+                        <div id="scheduleGrid" class="schedule-grid">
+                            <div class="schedule-placeholder">
+                                <i class="fas fa-calendar-alt"></i>
+                                <p>Selecciona un recurso y fecha</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('reservaModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="btnGuardarReserva">
+                        <i class="fas fa-save"></i> Guardar Reserva
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- New Recurso Modal -->
+    <div id="recursoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-laptop"></i> <span id="recursoModalTitle">Nuevo Recurso</span></h2>
+                <button class="modal-close" onclick="closeModal('recursoModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="recursoForm" class="modal-form">
+                <input type="hidden" id="recursoId">
+                <div class="form-group">
+                    <label for="recursoNombre"><i class="fas fa-tag"></i> Nombre</label>
+                    <input type="text" id="recursoNombre" placeholder="Ej: Portátil Dell XPS 15" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="recursoTipo"><i class="fas fa-layer-group"></i> Tipo</label>
+                        <select id="recursoTipo" required>
+                            <!-- Populated by JS -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="recursoEstado"><i class="fas fa-toggle-on"></i> Estado</label>
+                        <select id="recursoEstado" required>
+                            <option value="disponible">Disponible</option>
+                            <option value="no_disponible">No Disponible</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="recursoUbicacion"><i class="fas fa-map-marker-alt"></i> Ubicación</label>
+                    <select id="recursoUbicacion">
+                        <option value="">Sin ubicación específica</option>
+                        <option value="Almacén IT">Almacén IT</option>
+                        <option value="Taller IT">Taller IT</option>
+                        <option value="Sala Juntas Principal">Sala Juntas Principal</option>
+                        <option value="Sala Reuniones Pequeña">Sala Reuniones Pequeña</option>
+                        <option value="Sala Formación">Sala Formación</option>
+                        <option value="Sala Videoconferencia">Sala Videoconferencia</option>
+                        <option value="Oficina CEO">Oficina CEO</option>
+                        <option value="Oficina 1">Oficina 1</option>
+                        <option value="Oficina 2">Oficina 2</option>
+                        <option value="Oficina 3">Oficina 3</option>
+                        <option value="Oficina 4">Oficina 4</option>
+                        <option value="Oficina 5">Oficina 5</option>
+                        <option value="Recepción">Recepción</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="recursoFoto"><i class="fas fa-image"></i> URL de Imagen</label>
+                    <input type="url" id="recursoFoto" placeholder="https://ejemplo.com/imagen.jpg">
+                    <small class="form-hint">URL de la imagen del recurso (opcional)</small>
+                </div>
+                <div class="form-group">
+                    <label for="recursoDescripcion"><i class="fas fa-align-left"></i> Descripción / Especificaciones</label>
+                    <textarea id="recursoDescripcion" rows="3" placeholder="Ej: Intel Core i7, 16GB RAM, SSD 512GB..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('recursoModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Guardar Recurso
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- New Usuario Modal -->
+    <div id="usuarioModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-user-plus"></i> <span id="usuarioModalTitle">Nuevo Usuario</span></h2>
+                <button class="modal-close" onclick="closeModal('usuarioModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="usuarioForm" class="modal-form">
+                <input type="hidden" id="usuarioId">
+                <div class="form-group">
+                    <label for="usuarioNombre"><i class="fas fa-user"></i> Nombre</label>
+                    <input type="text" id="usuarioNombre" placeholder="Nombre completo" required>
+                </div>
+                <div class="form-group">
+                    <label for="usuarioEmail"><i class="fas fa-envelope"></i> Email</label>
+                    <input type="email" id="usuarioEmail" placeholder="email@empresa.com" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="usuarioPassword"><i class="fas fa-lock"></i> Contraseña</label>
+                        <input type="password" id="usuarioPassword" placeholder="••••••••">
+                    </div>
+                    <div class="form-group">
+                        <label for="usuarioRol"><i class="fas fa-user-tag"></i> Rol</label>
+                        <select id="usuarioRol" required>
+                            <option value="empleado">Empleado</option>
+                            <option value="admin">Administrador</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('usuarioModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Guardar Usuario
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- User Profile Modal -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content modal-profile">
+            <div class="modal-header">
+                <h2><i class="fas fa-user-circle"></i> Mi Perfil</h2>
+                <button class="modal-close" onclick="closeModal('profileModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="profile-content">
+                <div class="profile-avatar-section">
+                    <div class="profile-avatar-large" id="profileAvatar">
+                        <img src="" alt="Avatar" id="profileAvatarImg">
+                        <div class="avatar-placeholder" id="profileAvatarPlaceholder">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    </div>
+                    <input type="file" id="profilePhotoInput" accept="image/*" style="display: none;" onchange="handleProfilePhotoUpload(event)">
+                    <button class="btn btn-sm btn-outline" onclick="document.getElementById('profilePhotoInput').click()">
+                        <i class="fas fa-camera"></i> Cambiar Foto
+                    </button>
+                    <p class="photo-hint">JPG, PNG o GIF (máx. 2MB)</p>
+                </div>
+                <form id="profileForm" class="profile-form">
+                    <div class="form-group">
+                        <label><i class="fas fa-user"></i> Nombre</label>
+                        <input type="text" id="profileNombre" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-envelope"></i> Email</label>
+                        <input type="email" id="profileEmail" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-user-tag"></i> Rol</label>
+                        <input type="text" id="profileRol" readonly>
+                    </div>
+                    <hr class="form-divider">
+                    <h4><i class="fas fa-lock"></i> Cambiar Contraseña</h4>
+                    <div class="form-group">
+                        <label>Nueva Contraseña</label>
+                        <input type="password" id="profileNewPassword" placeholder="Dejar vacío para no cambiar">
+                    </div>
+                    <div class="form-group">
+                        <label>Confirmar Contraseña</label>
+                        <input type="password" id="profileConfirmPassword" placeholder="Confirmar nueva contraseña">
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-outline" onclick="closeModal('profileModal')">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resource Detail Modal -->
+    <div id="recursoDetailModal" class="modal">
+        <div class="modal-content modal-detail">
+            <div class="modal-header">
+                <h2><i class="fas fa-info-circle"></i> <span id="recursoDetailTitle">Detalle del Recurso</span></h2>
+                <button class="modal-close" onclick="closeModal('recursoDetailModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="detail-content">
+                <div class="detail-image" id="recursoDetailImage">
+                    <img src="" alt="Recurso">
+                </div>
+                <div class="detail-info">
+                    <div class="detail-header">
+                        <h3 id="recursoDetailName"></h3>
+                        <span class="status-badge" id="recursoDetailStatus"></span>
+                    </div>
+                    <div class="detail-meta">
+                        <div class="detail-meta-item">
+                            <i class="fas fa-tag"></i>
+                            <span id="recursoDetailType"></span>
+                        </div>
+                        <div class="detail-meta-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span id="recursoDetailLocation"></span>
+                        </div>
+                    </div>
+                    <div class="detail-description">
+                        <h4><i class="fas fa-align-left"></i> Especificaciones</h4>
+                        <p id="recursoDetailDesc"></p>
+                    </div>
+                    <div class="detail-actions">
+                        <button class="btn btn-primary" id="btnReservarDetail" onclick="reservarRecursoFromDetail()">
+                            <i class="fas fa-calendar-plus"></i> Reservar
+                        </button>
+                        <button class="btn btn-outline admin-only" id="btnEditDetail" onclick="editRecursoFromDetail()">
+                            <i class="fas fa-edit"></i> Editar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Summary Modal -->
+    <div id="aiSummaryModal" class="modal">
+        <div class="modal-content modal-ai-summary">
+            <div class="modal-header">
+                <h2><i class="fas fa-robot"></i> Resumen Ejecutivo AI</h2>
+                <button class="modal-close" onclick="closeModal('aiSummaryModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="aiSummaryContent" class="ai-summary-content">
+                    <div class="ai-loading">
+                        <div class="ai-loading-spinner"></div>
+                        <p>Generando resumen con IA...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="ai-powered">
+                    <i class="fas fa-sparkles"></i> Powered by Groq + Llama 3.3
+                </div>
+                <button class="btn btn-outline" onclick="copyAISummary()">
+                    <i class="fas fa-copy"></i> Copiar
+                </button>
+                <button class="btn btn-primary" onclick="closeModal('aiSummaryModal')">
+                    <i class="fas fa-check"></i> Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Modal (Custom) -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content modal-confirm">
+            <div class="confirm-icon" id="confirmIcon">
+                <i class="fas fa-question-circle"></i>
+            </div>
+            <h3 id="confirmTitle">¿Estás seguro?</h3>
+            <p id="confirmMessage">Esta acción no se puede deshacer.</p>
+            <div class="confirm-actions">
+                <button class="btn btn-outline" id="confirmCancel">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button class="btn btn-danger" id="confirmAccept">
+                    <i class="fas fa-check"></i> Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script src="script.js?v=2"></script>
+</body>
+</html>
